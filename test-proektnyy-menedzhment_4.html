@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тест: проектный менеджмент</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#eef1f7; --card:#ffffff; --ink:#15192b; --muted:#5f6680; --line:#dde2ee;
+    --accent:#2f49c9; --accent-soft:#e7ebfb; --accent-ink:#21349e;
+    --ok:#1f8a5b; --ok-soft:#e4f4ec; --no:#d23a2c; --no-soft:#fbe6e3;
+    --radius:14px; --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; padding-bottom:64px;
+  }
+  .topbar{position:fixed; inset:0 0 auto 0; height:4px; background:var(--line); z-index:50}
+  .topbar-fill{height:100%; width:0; background:var(--accent); transition:width .3s ease}
+  .wrap{max-width:760px; margin:0 auto; padding:56px 22px 0}
+
+  .head{position:relative; margin-bottom:30px; padding:26px 26px 28px; background:var(--card);
+    border:1px solid var(--line); border-radius:var(--radius); overflow:hidden}
+  .head::before{content:""; position:absolute; inset:0; opacity:.5; pointer-events:none;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:26px 26px; mask-image:linear-gradient(180deg,#000,transparent 70%)}
+  .head>*{position:relative}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent-ink); font-weight:600; margin:0 0 14px}
+  h1{font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:clamp(28px,5.6vw,44px); line-height:1.05; letter-spacing:-.015em; margin:0 0 14px}
+  .lead{color:var(--muted); font-size:17px; max-width:54ch; margin:0}
+
+  .who{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:0 0 30px}
+  .who label{display:flex; flex-direction:column; gap:7px; font-family:var(--mono); font-size:12px; letter-spacing:.04em; text-transform:uppercase; color:var(--muted)}
+  .req{color:var(--accent)}
+  .who input{
+    font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; text-transform:none; letter-spacing:0;
+    color:var(--ink); padding:11px 13px; border:1px solid var(--line); border-radius:10px; background:var(--card); transition:border-color .15s
+  }
+  .who input:focus{outline:none; border-color:var(--accent)}
+
+  .q{margin:0 0 14px; padding:22px; background:var(--card); border:1px solid var(--line); border-radius:var(--radius)}
+  .qhead{display:flex; gap:13px; align-items:flex-start; margin-bottom:16px}
+  .num{flex:0 0 auto; font-family:var(--mono); font-weight:600; font-size:14px; color:var(--accent-ink);
+    background:var(--accent-soft); border-radius:7px; padding:4px 8px; margin-top:1px; letter-spacing:.02em}
+  .qt{font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:17.5px; line-height:1.4}
+  .opts{display:flex; flex-direction:column; gap:9px}
+  .opt{display:flex; gap:12px; align-items:flex-start; padding:12px 14px; border:1px solid var(--line);
+    border-radius:11px; cursor:pointer; transition:border-color .15s, background .15s}
+  .opt:hover{border-color:#c4cbdd}
+  .opt input{position:absolute; opacity:0; width:0; height:0}
+  .mark{flex:0 0 auto; width:19px; height:19px; border-radius:5px; border:2px solid #b9c0d4; margin-top:2px; transition:border-color .15s}
+  .mark::after{content:""; display:block; width:9px; height:9px; border-radius:2px; background:var(--accent);
+    margin:3px; transform:scale(0); transition:transform .15s}
+  .opt:has(input:checked){border-color:var(--accent); background:var(--accent-soft)}
+  .opt:has(input:checked) .mark{border-color:var(--accent)}
+  .opt:has(input:checked) .mark::after{transform:scale(1)}
+  .opt:has(input:focus-visible){outline:2px solid var(--accent); outline-offset:2px}
+  .otxt{font-size:15.5px; line-height:1.45}
+
+  .foot{display:flex; align-items:center; justify-content:space-between; gap:18px; margin-top:24px; flex-wrap:wrap}
+  .counter{font-family:var(--mono); font-size:13px; letter-spacing:.04em; color:var(--muted)}
+  .counter b{color:var(--ink)}
+  .btn{font:16px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; font-weight:600; border:0; cursor:pointer;
+    padding:14px 26px; border-radius:11px; background:var(--accent); color:#fff; transition:transform .08s, background .15s}
+  .btn:hover{background:var(--accent-ink)}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:transparent; color:var(--ink); border:1px solid var(--line)}
+  .btn.ghost:hover{background:#fff; border-color:#c4cbdd}
+
+  .notice{margin:16px 0 0; padding:13px 15px; border-radius:11px; background:var(--no-soft); color:#9b2018; font-size:14.5px}
+
+  .result{display:none}
+  .scorecard{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:30px; text-align:center; margin-bottom:22px}
+  .score-big{font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:clamp(46px,11vw,72px); line-height:1; letter-spacing:-.02em}
+  .score-big .slash{color:var(--line); margin:0 6px}
+  .score-pct{font-weight:600; font-size:18px; margin-top:8px}
+  .score-msg{color:var(--muted); margin-top:6px; font-size:15.5px}
+  .sub{font-family:var(--mono); font-weight:600; font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:26px 0 12px}
+
+  .rb{border:1px solid var(--line); border-left-width:4px; border-radius:11px; padding:15px 17px; margin-bottom:10px; background:var(--card)}
+  .rb.ok{border-left-color:var(--ok)}
+  .rb.no{border-left-color:var(--no)}
+  .rb-q{display:flex; gap:10px; font-weight:600; font-size:15.5px; line-height:1.4}
+  .rb-q .rb-n{color:var(--muted); font-family:var(--mono)}
+  .rb-a{margin-top:8px; font-size:14.5px}
+  .rb-a .tag{font-weight:600}
+  .rb.ok .tag{color:var(--ok)}
+  .rb.no .tag{color:var(--no)}
+  .rb-c{margin-top:5px; font-size:14.5px; color:var(--ok)}
+
+  .sendstatus{margin:20px 0; padding:13px 16px; border-radius:11px; font-size:14.5px; background:#e6e9f3; color:var(--muted)}
+  .sendstatus.good{background:var(--ok-soft); color:#16613f}
+  .sendstatus.bad{background:var(--no-soft); color:#9b2018}
+
+  @media (max-width:560px){ .who{grid-template-columns:1fr} .foot .btn{width:100%} }
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important} }
+</style>
+</head>
+<body>
+<div class="topbar"><div class="topbar-fill" id="barFill"></div></div>
+
+<main class="wrap">
+  <header class="head">
+    <p class="eyebrow">Проверка знаний</p>
+    <h1>Проектный менеджмент в компании</h1>
+    <p class="lead">14 вопросов с одним верным вариантом. Базовые понятия управления проектами: ограничения, роли, методологии и инструменты. Результат покажется сразу после завершения.</p>
+  </header>
+
+  <section class="who" id="who">
+    <label><span class="lbltext">Имя и фамилия <span class="req">*</span></span>
+      <input id="name" type="text" autocomplete="name" placeholder="Например, Иван Петров">
+    </label>
+    <label>Должность или отдел
+      <input id="dept" type="text" placeholder="Например, проектный офис">
+    </label>
+  </section>
+
+  <form id="quiz" novalidate>
+    <div id="questions"></div>
+    <div class="foot">
+      <div class="counter">Отвечено <b><span id="answered">0</span></b> из <span id="total">0</span></div>
+      <button type="submit" class="btn" id="submitBtn">Завершить тест</button>
+    </div>
+    <p class="notice" id="notice" hidden></p>
+  </form>
+
+  <section class="result" id="result">
+    <div class="scorecard">
+      <div class="score-big"><span id="scoreVal">0</span><span class="slash">/</span><span id="scoreTot">0</span></div>
+      <div class="score-pct" id="scorePct">0%</div>
+      <div class="score-msg" id="scoreMsg"></div>
+    </div>
+    <p class="sub">Разбор ответов</p>
+    <div id="breakdown"></div>
+    <p class="sendstatus" id="sendStatus">Отправляем результат на почту...</p>
+    <button type="button" class="btn ghost" id="retry">Пройти заново</button>
+  </section>
+</main>
+
+<script>
+  // ===== Настройки =====
+  const EMAIL = "34a9a23cf7023687276e70e3a13d134b";   // куда приходят результаты
+  const TEST_TITLE = "Проектный менеджмент в компании";
+  const SHOW_CORRECT = true;                // показывать правильный ответ при ошибке
+
+  // ===== Вопросы (c — индекс верного варианта, 0..3) =====
+  const QUESTIONS = [
+    { q:`"Тройное ограничение" проекта это баланс между...`,
+      a:[`Командой, бюджетом и клиентом`,
+         `Содержанием (объемом), сроками и стоимостью`,
+         `Качеством, рисками и коммуникациями`,
+         `Планом, отчетом и результатом`], c:1 },
+
+    { q:`Кто в Scrum отвечает за приоритеты и наполнение бэклога продукта?`,
+      a:[`Scrum-мастер`,
+         `Владелец продукта (Product Owner)`,
+         `Команда разработки`,
+         `Внешний заказчик`], c:1 },
+
+    { q:`В чем основная роль Scrum-мастера в команде?`,
+      a:[`Это начальник, который раздает задачи`,
+         `Убирает препятствия и помогает команде следовать процессу`,
+         `Это главный заказчик продукта`,
+         `Пишет всю проектную документацию`], c:1 },
+
+    { q:`Что такое спринт в Scrum?`,
+      a:[`Финальный этап всего проекта`,
+         `Фиксированный короткий отрезок времени, за который команда создает готовый инкремент`,
+         `Ежедневная встреча команды`,
+         `Полный список задач проекта`], c:1 },
+
+    { q:`Бэклог продукта это...`,
+      a:[`Отчет о завершенных задачах`,
+         `Приоритизированный список всего, что нужно сделать в продукте`,
+         `График отпусков команды`,
+         `Бюджет проекта`], c:1 },
+
+    { q:`Что показывает критический путь (critical path) в проекте?`,
+      a:[`Самый дорогой набор задач`,
+         `Самую длинную цепочку зависимых задач, которая определяет минимальный срок проекта`,
+         `Список всех рисков проекта`,
+         `Задачи, которые можно не делать`], c:1 },
+
+    { q:`Для чего нужна матрица RACI?`,
+      a:[`Чтобы рассчитать бюджет`,
+         `Чтобы распределить роли: кто делает, кто отвечает, с кем советуются, кого информируют`,
+         `Чтобы оценить вероятность рисков`,
+         `Чтобы построить календарный график`], c:1 },
+
+    { q:`Что такое MVP (Minimum Viable Product)?`,
+      a:[`Самый дорогой и полный вариант продукта`,
+         `Версия с минимальным набором функций, достаточным, чтобы проверить гипотезу у пользователей`,
+         `Финальная версия после всех доработок`,
+         `Маркетинговая презентация продукта`], c:1 },
+
+    { q:`В чем основная польза диаграммы Ганта?`,
+      a:[`Считать прибыль проекта`,
+         `Наглядно показать задачи, их длительность и последовательность во времени`,
+         `Оценивать качество кода`,
+         `Проводить ретроспективы`], c:1 },
+
+    { q:`С чего начинается управление рисками в проекте?`,
+      a:[`С выделения бюджета на риски`,
+         `С идентификации возможных рисков`,
+         `С закрытия проекта`,
+         `С найма новых сотрудников`], c:1 },
+
+    { q:`Зачем команда проводит ретроспективу?`,
+      a:[`Чтобы найти и наказать виновных в ошибках`,
+         `Чтобы разобрать, что прошло хорошо и что улучшить в следующий раз`,
+         `Чтобы отчитаться перед заказчиком`,
+         `Чтобы спланировать бюджет`], c:1 },
+
+    { q:`Кто такие стейкхолдеры (заинтересованные стороны) проекта?`,
+      a:[`Только команда разработки`,
+         `Все, кто влияет на проект или на кого влияет его результат`,
+         `Только заказчик и спонсор`,
+         `Только конечные пользователи`], c:1 },
+
+    { q:`Что такое веха (milestone) в проекте?`,
+      a:[`Любая мелкая рабочая задача`,
+         `Значимая контрольная точка, которая отмечает важный результат или этап`,
+         `Перерасход бюджета`,
+         `Ежедневный статус команды`], c:1 },
+
+    { q:`Чем итеративный подход (Agile) отличается от каскадного (Waterfall)?`,
+      a:[`Agile делает все этапы строго последовательно, Waterfall короткими циклами`,
+         `Agile работает короткими циклами с регулярной обратной связью, Waterfall идет последовательными этапами от начала до конца`,
+         `Это по сути одно и то же`,
+         `Waterfall вообще не предполагает планирования`], c:1 }
+  ];
+
+  // ===== Рендер =====
+  const qWrap = document.getElementById("questions");
+  const answers = {};
+  const pad = (n) => String(n).padStart(2, "0");
+  QUESTIONS.forEach((item, i) => {
+    const fs = document.createElement("div");
+    fs.className = "q";
+    fs.setAttribute("role", "radiogroup");
+    fs.setAttribute("aria-labelledby", `q${i}-label`);
+    let opts = "";
+    item.a.forEach((opt, j) => {
+      opts += `<label class="opt"><input type="radio" name="q${i}" value="${j}"><span class="mark"></span><span class="otxt">${opt}</span></label>`;
+    });
+    fs.innerHTML = `<div class="qhead" id="q${i}-label"><span class="num">${pad(i+1)}</span><span class="qt">${item.q}</span></div><div class="opts">${opts}</div>`;
+    qWrap.appendChild(fs);
+  });
+  document.getElementById("total").textContent = QUESTIONS.length;
+  document.getElementById("scoreTot").textContent = QUESTIONS.length;
+
+  qWrap.addEventListener("change", (e) => {
+    if (e.target.name && /^q\d+$/.test(e.target.name)) {
+      answers[+e.target.name.slice(1)] = +e.target.value;
+      updateProgress();
+    }
+  });
+  function updateProgress(){
+    const n = Object.keys(answers).length;
+    document.getElementById("answered").textContent = n;
+    document.getElementById("barFill").style.width = (n / QUESTIONS.length * 100) + "%";
+  }
+
+  // ===== Завершение =====
+  document.getElementById("quiz").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("name").value.trim();
+    const dept = document.getElementById("dept").value.trim();
+    const notice = document.getElementById("notice");
+
+    const missing = QUESTIONS.map((_, i) => i).filter(i => answers[i] === undefined);
+    const problems = [];
+    if (!name) problems.push("укажите имя");
+    if (missing.length) problems.push("остались без ответа вопросы: " + missing.map(i => i+1).join(", "));
+    if (problems.length){
+      notice.hidden = false;
+      notice.textContent = "Чтобы завершить, " + problems.join("; ") + ".";
+      if (!name){ document.getElementById("name").focus(); }
+      else { document.querySelector(`[name="q${missing[0]}"]`).closest(".q").scrollIntoView({behavior:"smooth", block:"center"}); }
+      return;
+    }
+    notice.hidden = true;
+
+    let score = 0;
+    QUESTIONS.forEach((item, i) => { if (answers[i] === item.c) score++; });
+    const total = QUESTIONS.length;
+    const pct = Math.round(score / total * 100);
+
+    document.getElementById("scoreVal").textContent = score;
+    const pctEl = document.getElementById("scorePct");
+    pctEl.textContent = pct + "% правильных ответов";
+    let msg, color;
+    if (pct >= 85){ msg = "Отличный результат. Уверенное владение темой."; color = "var(--ok)"; }
+    else if (pct >= 60){ msg = "Хороший результат. Есть точки роста, посмотрите разбор."; color = "var(--accent)"; }
+    else { msg = "Тему стоит подтянуть. Разберите ошибки ниже."; color = "var(--no)"; }
+    pctEl.style.color = color;
+    document.getElementById("scoreMsg").textContent = msg;
+
+    const bd = document.getElementById("breakdown");
+    bd.innerHTML = "";
+    QUESTIONS.forEach((item, i) => {
+      const ok = answers[i] === item.c;
+      const div = document.createElement("div");
+      div.className = "rb " + (ok ? "ok" : "no");
+      let html = `<div class="rb-q"><span class="rb-n">${pad(i+1)}</span><span>${item.q}</span></div>`;
+      html += `<div class="rb-a">Ваш ответ: ${item.a[answers[i]]} <span class="tag">— ${ok ? "верно" : "неверно"}</span></div>`;
+      if (!ok && SHOW_CORRECT) html += `<div class="rb-c">Правильный ответ: ${item.a[item.c]}</div>`;
+      div.innerHTML = html;
+      bd.appendChild(div);
+    });
+
+    document.getElementById("who").style.display = "none";
+    document.getElementById("quiz").style.display = "none";
+    document.getElementById("result").style.display = "block";
+    window.scrollTo({top:0, behavior:"smooth"});
+
+    sendResult(name, dept, score, total, pct);
+  });
+
+  // ===== Отправка на почту через FormSubmit =====
+  function sendResult(name, dept, score, total, pct){
+    const status = document.getElementById("sendStatus");
+    const payload = {
+      "Тест": TEST_TITLE,
+      "Имя": name,
+      "Должность / отдел": dept || "не указано",
+      "Результат": `${score} из ${total} (${pct}%)`,
+      "_subject": `Тест: ${TEST_TITLE} — ${name} — ${score}/${total} (${pct}%)`,
+      "_template": "table",
+      "_captcha": "false"
+    };
+    QUESTIONS.forEach((item, i) => {
+      const ok = answers[i] === item.c;
+      payload[`Вопрос ${i+1}`] = `${item.q} — Ответ: ${item.a[answers[i]]} (${ok ? "верно" : "неверно"})`;
+    });
+
+    fetch(`https://formsubmit.co/ajax/${EMAIL}`, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json", "Accept":"application/json" },
+      body: JSON.stringify(payload)
+    })
+    .then(r => { if(!r.ok) throw new Error("net"); return r.json(); })
+    .then(() => {
+      status.className = "sendstatus good";
+      status.textContent = `Готово. Результат отправлен на ${EMAIL}.`;
+    })
+    .catch(() => {
+      status.className = "sendstatus bad";
+      status.textContent = "Результат подсчитан, но письмо отправить не удалось. Откройте страницу с сайта, а не как локальный файл, и подтвердите адрес по письму активации при первой отправке.";
+    });
+  }
+
+  document.getElementById("retry").addEventListener("click", () => location.reload());
+</script>
+</body>
+</html>
