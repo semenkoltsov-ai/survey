@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тест: продажи и работа с клиентами</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4f4f3; --card:#ffffff; --ink:#1b1a19; --muted:#6f6e6a; --line:#e6e5e2;
+    --accent:#e85d2a; --accent-soft:#fce7dc; --accent-ink:#b34317;
+    --ok:#1f8a5b; --ok-soft:#e4f4ec; --no:#cf2f2f; --no-soft:#fbe6e3;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; padding-bottom:64px;
+  }
+  .topbar{position:fixed; inset:0 0 auto 0; height:4px; background:var(--line); z-index:50}
+  .topbar-fill{height:100%; width:0; background:linear-gradient(90deg,#f08a4f,var(--accent)); transition:width .3s ease}
+  .wrap{max-width:760px; margin:0 auto; padding:56px 22px 0}
+
+  .head{margin-bottom:30px}
+  .eyebrow{font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent-ink); font-weight:600; margin:0 0 14px}
+  h1{font-family:"Archivo",sans-serif; font-weight:800; font-size:clamp(30px,6vw,46px); line-height:1.04; letter-spacing:-.02em; margin:0 0 14px}
+  .lead{color:var(--muted); font-size:17px; max-width:54ch; margin:0}
+
+  .who{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:0 0 30px}
+  .who label{display:flex; flex-direction:column; gap:7px; font-size:13px; color:var(--muted)}
+  .req{color:var(--accent)}
+  .who input{
+    font:inherit; color:var(--ink); padding:11px 13px; border:1px solid var(--line);
+    border-radius:10px; background:var(--card); transition:border-color .15s
+  }
+  .who input:focus{outline:none; border-color:var(--accent)}
+
+  .q{margin:0 0 14px; padding:22px; background:var(--card); border:1px solid var(--line); border-radius:var(--radius)}
+  .qhead{display:flex; gap:13px; align-items:flex-start; margin-bottom:16px}
+  .num{flex:0 0 auto; width:28px; height:28px; border-radius:50%; background:var(--accent-soft); color:var(--accent-ink);
+    font-family:"Archivo",sans-serif; font-weight:800; font-size:14px; display:flex; align-items:center; justify-content:center; margin-top:1px}
+  .qt{font-weight:600; font-size:17px; line-height:1.4}
+  .opts{display:flex; flex-direction:column; gap:9px}
+  .opt{display:flex; gap:12px; align-items:flex-start; padding:12px 14px; border:1px solid var(--line);
+    border-radius:11px; cursor:pointer; transition:border-color .15s, background .15s}
+  .opt:hover{border-color:#cfcecb}
+  .opt input{position:absolute; opacity:0; width:0; height:0}
+  .mark{flex:0 0 auto; width:19px; height:19px; border-radius:50%; border:2px solid #c9c8c4; margin-top:2px; transition:border-color .15s}
+  .mark::after{content:""; display:block; width:9px; height:9px; border-radius:50%; background:var(--accent);
+    margin:3px; transform:scale(0); transition:transform .15s}
+  .opt:has(input:checked){border-color:var(--accent); background:var(--accent-soft)}
+  .opt:has(input:checked) .mark{border-color:var(--accent)}
+  .opt:has(input:checked) .mark::after{transform:scale(1)}
+  .opt:has(input:focus-visible){outline:2px solid var(--accent); outline-offset:2px}
+  .otxt{font-size:15.5px; line-height:1.45}
+
+  .foot{display:flex; align-items:center; justify-content:space-between; gap:18px; margin-top:24px; flex-wrap:wrap}
+  .counter{font-size:14px; color:var(--muted)}
+  .counter b{color:var(--ink); font-family:"Archivo",sans-serif}
+  .btn{font:inherit; font-weight:600; border:0; cursor:pointer; padding:13px 26px; border-radius:11px;
+    background:var(--accent); color:#fff; transition:transform .08s, background .15s}
+  .btn:hover{background:var(--accent-ink)}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:transparent; color:var(--ink); border:1px solid var(--line)}
+  .btn.ghost:hover{background:#fff; border-color:#cfcecb}
+
+  .notice{margin:16px 0 0; padding:13px 15px; border-radius:11px; background:var(--no-soft); color:#9b2018; font-size:14.5px}
+
+  .result{display:none}
+  .scorecard{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:30px; text-align:center; margin-bottom:22px}
+  .score-big{font-family:"Archivo",sans-serif; font-weight:800; font-size:clamp(46px,11vw,72px); line-height:1; letter-spacing:-.02em}
+  .score-big .slash{color:var(--line); margin:0 6px}
+  .score-pct{font-weight:600; font-size:18px; margin-top:8px}
+  .score-msg{color:var(--muted); margin-top:6px; font-size:15.5px}
+  .sub{font-family:"Archivo",sans-serif; font-weight:800; font-size:14px; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); margin:26px 0 12px}
+
+  .rb{border:1px solid var(--line); border-left-width:4px; border-radius:11px; padding:15px 17px; margin-bottom:10px; background:var(--card)}
+  .rb.ok{border-left-color:var(--ok)}
+  .rb.no{border-left-color:var(--no)}
+  .rb-q{display:flex; gap:10px; font-weight:600; font-size:15.5px; line-height:1.4}
+  .rb-q .rb-n{color:var(--muted); font-family:"Archivo",sans-serif}
+  .rb-a{margin-top:8px; font-size:14.5px}
+  .rb-a .tag{font-weight:600}
+  .rb.ok .tag{color:var(--ok)}
+  .rb.no .tag{color:var(--no)}
+  .rb-c{margin-top:5px; font-size:14.5px; color:var(--ok)}
+
+  .sendstatus{margin:20px 0; padding:13px 16px; border-radius:11px; font-size:14.5px; background:#f0eff5; color:var(--muted)}
+  .sendstatus.good{background:var(--ok-soft); color:#16613f}
+  .sendstatus.bad{background:var(--no-soft); color:#9b2018}
+
+  @media (max-width:560px){ .who{grid-template-columns:1fr} .foot .btn{width:100%} }
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important} }
+</style>
+</head>
+<body>
+<div class="topbar"><div class="topbar-fill" id="barFill"></div></div>
+
+<main class="wrap">
+  <header class="head">
+    <p class="eyebrow">Проверка знаний</p>
+    <h1>Продажи и работа с клиентами</h1>
+    <p class="lead">13 вопросов с одним верным вариантом. Отвечайте по тому, как считаете правильным действовать в работе. Результат покажется сразу после завершения.</p>
+  </header>
+
+  <section class="who" id="who">
+    <label><span class="lbltext">Имя и фамилия <span class="req">*</span></span>
+      <input id="name" type="text" autocomplete="name" placeholder="Например, Иван Петров">
+    </label>
+    <label>Должность или отдел
+      <input id="dept" type="text" placeholder="Например, отдел продаж">
+    </label>
+  </section>
+
+  <form id="quiz" novalidate>
+    <div id="questions"></div>
+    <div class="foot">
+      <div class="counter">Отвечено <b><span id="answered">0</span></b> из <span id="total">0</span></div>
+      <button type="submit" class="btn" id="submitBtn">Завершить тест</button>
+    </div>
+    <p class="notice" id="notice" hidden></p>
+  </form>
+
+  <section class="result" id="result">
+    <div class="scorecard">
+      <div class="score-big"><span id="scoreVal">0</span><span class="slash">/</span><span id="scoreTot">0</span></div>
+      <div class="score-pct" id="scorePct">0%</div>
+      <div class="score-msg" id="scoreMsg"></div>
+    </div>
+    <p class="sub">Разбор ответов</p>
+    <div id="breakdown"></div>
+    <p class="sendstatus" id="sendStatus">Отправляем результат на почту...</p>
+    <button type="button" class="btn ghost" id="retry">Пройти заново</button>
+  </section>
+</main>
+
+<script>
+  // ===== Настройки =====
+  const EMAIL = "semenkoltsov@gmail.com";   // куда приходят результаты
+  const TEST_TITLE = "Продажи и работа с клиентами";
+  const SHOW_CORRECT = true;                // показывать правильный ответ при ошибке
+
+  // ===== Вопросы (c — индекс верного варианта, 0..3) =====
+  const QUESTIONS = [
+    { q:`Методика SPIN выстраивает разговор через четыре типа вопросов. В какой последовательности их задают?`,
+      a:[`Направляющие, Ситуационные, Проблемные, Извлекающие`,
+         `Ситуационные, Проблемные, Извлекающие, Направляющие`,
+         `Проблемные, Ситуационные, Направляющие, Извлекающие`,
+         `Извлекающие, Направляющие, Проблемные, Ситуационные`], c:1 },
+
+    { q:`Квалификация лида по модели BANT учитывает четыре фактора. Какие именно?`,
+      a:[`Бренд, Активность, Потребность, Доверие`,
+         `Бюджет, Полномочия, Потребность, Сроки`,
+         `Бюджет, Аудитория, Намерение, Тренд`,
+         `Бренд, Полномочия, Интерес, Сроки`], c:1 },
+
+    { q:`Клиент говорит "это слишком дорого". Что разумнее сделать в первую очередь?`,
+      a:[`Сразу предложить скидку`,
+         `Согласиться, что продукт подходит не всем`,
+         `Уточнить, с чем он сравнивает и что вкладывает в слово "дорого"`,
+         `Заново перечислить все преимущества продукта`], c:2 },
+
+    { q:`Что показывает метрика LTV (Lifetime Value)?`,
+      a:[`Стоимость привлечения одного клиента`,
+         `Суммарную ценность, которую клиент приносит за все время сотрудничества`,
+         `Среднюю длительность сделки в днях`,
+         `Долю повторных покупок за месяц`], c:1 },
+
+    { q:`Метрика CAC отражает...`,
+      a:[`Среднюю выручку на одного клиента`,
+         `Затраты на удержание клиента`,
+         `Стоимость привлечения одного нового клиента`,
+         `Количество касаний до сделки`], c:2 },
+
+    { q:`В чем разница между up-sell и cross-sell?`,
+      a:[`Up-sell это продажа более дорогой версии, cross-sell это продажа дополняющих товаров`,
+         `Up-sell это продажа аксессуаров, cross-sell это повышение цены`,
+         `Это по сути одно и то же`,
+         `Up-sell работает только с новыми клиентами, cross-sell только с текущими`], c:0 },
+
+    { q:`Активное слушание в продажах прежде всего помогает...`,
+      a:[`Быстрее перейти к презентации`,
+         `Точнее понять реальную потребность и показать клиенту, что его услышали`,
+         `Сократить время разговора`,
+         `Убедить клиента меньше говорить`], c:1 },
+
+    { q:`Индекс NPS измеряет...`,
+      a:[`Объем выручки за период`,
+         `Готовность клиентов рекомендовать компанию другим`,
+         `Скорость ответа службы поддержки`,
+         `Конверсию из лида в сделку`], c:1 },
+
+    { q:`Возражение оказалось ложным, то есть отговоркой. Что с ним делать?`,
+      a:[`Игнорировать и продолжать презентацию`,
+         `Давить, пока клиент не согласится`,
+         `Аккуратно вскрыть истинную причину через уточняющие вопросы`,
+         `Сразу прощаться, сделка не состоится`], c:2 },
+
+    { q:`Что такое техника "альтернативного закрытия"?`,
+      a:[`Вопрос с выбором между двумя вариантами покупки вместо выбора между "да" и "нет"`,
+         `Предложение клиенту подумать неделю`,
+         `Закрытие сделки исключительно через скидку`,
+         `Отправка коммерческого предложения и ожидание ответа`], c:0 },
+
+    { q:`Недовольный клиент эмоционально предъявляет претензию. Какой первый шаг правильный?`,
+      a:[`Объяснить, что он сам виноват`,
+         `Признать проблему и эмоции клиента, дать понять, что вы на его стороне`,
+         `Сразу перевести разговор на другого сотрудника`,
+         `Сослаться на регламент и закрыть вопрос`], c:1 },
+
+    { q:`Зачем нужен follow-up, то есть повторный контакт после встречи или отправки КП?`,
+      a:[`Это формальность, на сделку он не влияет`,
+         `Чтобы напомнить о себе, снять оставшиеся сомнения и продвинуть сделку`,
+         `Чтобы получить отказ как можно быстрее`,
+         `Только чтобы отчитаться перед руководителем`], c:1 },
+
+    { q:`Что в большинстве случаев выгоднее для бизнеса?`,
+      a:[`Привлечь нового клиента всегда дешевле, чем удержать текущего`,
+         `Удержание текущего клиента обычно обходится дешевле привлечения нового`,
+         `Стоимость привлечения и удержания всегда одинаковая`,
+         `Удержание клиентов на прибыль не влияет`], c:1 }
+  ];
+
+  // ===== Рендер =====
+  const qWrap = document.getElementById("questions");
+  const answers = {};
+  QUESTIONS.forEach((item, i) => {
+    const fs = document.createElement("div");
+    fs.className = "q";
+    fs.setAttribute("role", "radiogroup");
+    fs.setAttribute("aria-labelledby", `q${i}-label`);
+    let opts = "";
+    item.a.forEach((opt, j) => {
+      opts += `<label class="opt"><input type="radio" name="q${i}" value="${j}"><span class="mark"></span><span class="otxt">${opt}</span></label>`;
+    });
+    fs.innerHTML = `<div class="qhead" id="q${i}-label"><span class="num">${i+1}</span><span class="qt">${item.q}</span></div><div class="opts">${opts}</div>`;
+    qWrap.appendChild(fs);
+  });
+  document.getElementById("total").textContent = QUESTIONS.length;
+  document.getElementById("scoreTot").textContent = QUESTIONS.length;
+
+  qWrap.addEventListener("change", (e) => {
+    if (e.target.name && /^q\d+$/.test(e.target.name)) {
+      answers[+e.target.name.slice(1)] = +e.target.value;
+      updateProgress();
+    }
+  });
+  function updateProgress(){
+    const n = Object.keys(answers).length;
+    document.getElementById("answered").textContent = n;
+    document.getElementById("barFill").style.width = (n / QUESTIONS.length * 100) + "%";
+  }
+
+  // ===== Завершение =====
+  document.getElementById("quiz").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("name").value.trim();
+    const dept = document.getElementById("dept").value.trim();
+    const notice = document.getElementById("notice");
+
+    const missing = QUESTIONS.map((_, i) => i).filter(i => answers[i] === undefined);
+    const problems = [];
+    if (!name) problems.push("укажите имя");
+    if (missing.length) problems.push("остались без ответа вопросы: " + missing.map(i => i+1).join(", "));
+    if (problems.length){
+      notice.hidden = false;
+      notice.textContent = "Чтобы завершить, " + problems.join("; ") + ".";
+      if (!name){ document.getElementById("name").focus(); }
+      else { document.querySelector(`[name="q${missing[0]}"]`).closest(".q").scrollIntoView({behavior:"smooth", block:"center"}); }
+      return;
+    }
+    notice.hidden = true;
+
+    let score = 0;
+    QUESTIONS.forEach((item, i) => { if (answers[i] === item.c) score++; });
+    const total = QUESTIONS.length;
+    const pct = Math.round(score / total * 100);
+
+    // карточка результата
+    document.getElementById("scoreVal").textContent = score;
+    const pctEl = document.getElementById("scorePct");
+    pctEl.textContent = pct + "% правильных ответов";
+    let msg, color;
+    if (pct >= 85){ msg = "Отличный результат. Уверенное владение темой."; color = "var(--ok)"; }
+    else if (pct >= 60){ msg = "Хороший результат. Есть точки роста, посмотрите разбор."; color = "var(--accent)"; }
+    else { msg = "Тему стоит подтянуть. Разберите ошибки ниже."; color = "var(--no)"; }
+    pctEl.style.color = color;
+    document.getElementById("scoreMsg").textContent = msg;
+
+    // разбор
+    const bd = document.getElementById("breakdown");
+    bd.innerHTML = "";
+    QUESTIONS.forEach((item, i) => {
+      const ok = answers[i] === item.c;
+      const div = document.createElement("div");
+      div.className = "rb " + (ok ? "ok" : "no");
+      let html = `<div class="rb-q"><span class="rb-n">${i+1}.</span><span>${item.q}</span></div>`;
+      html += `<div class="rb-a">Ваш ответ: ${item.a[answers[i]]} <span class="tag">— ${ok ? "верно" : "неверно"}</span></div>`;
+      if (!ok && SHOW_CORRECT) html += `<div class="rb-c">Правильный ответ: ${item.a[item.c]}</div>`;
+      div.innerHTML = html;
+      bd.appendChild(div);
+    });
+
+    // показать результат
+    document.getElementById("who").style.display = "none";
+    document.getElementById("quiz").style.display = "none";
+    document.getElementById("result").style.display = "block";
+    window.scrollTo({top:0, behavior:"smooth"});
+
+    sendResult(name, dept, score, total, pct);
+  });
+
+  // ===== Отправка на почту через FormSubmit =====
+  function sendResult(name, dept, score, total, pct){
+    const status = document.getElementById("sendStatus");
+    const payload = {
+      "Тест": TEST_TITLE,
+      "Имя": name,
+      "Должность / отдел": dept || "не указано",
+      "Результат": `${score} из ${total} (${pct}%)`,
+      "_subject": `Тест: ${TEST_TITLE} — ${name} — ${score}/${total} (${pct}%)`,
+      "_template": "table",
+      "_captcha": "false"
+    };
+    QUESTIONS.forEach((item, i) => {
+      const ok = answers[i] === item.c;
+      payload[`Вопрос ${i+1}. ${item.q}`] = `Ваш ответ: ${item.a[answers[i]]} — ${ok ? "верно" : "неверно"}`;
+    });
+
+    fetch(`https://formsubmit.co/ajax/${EMAIL}`, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json", "Accept":"application/json" },
+      body: JSON.stringify(payload)
+    })
+    .then(r => { if(!r.ok) throw new Error("net"); return r.json(); })
+    .then(() => {
+      status.className = "sendstatus good";
+      status.textContent = `Готово. Результат отправлен на ${EMAIL}.`;
+    })
+    .catch(() => {
+      status.className = "sendstatus bad";
+      status.textContent = "Результат подсчитан, но письмо отправить не удалось. Откройте страницу с сайта, а не как локальный файл, и подтвердите адрес по письму активации при первой отправке.";
+    });
+  }
+
+  document.getElementById("retry").addEventListener("click", () => location.reload());
+</script>
+</body>
+</html>
